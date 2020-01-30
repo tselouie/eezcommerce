@@ -1,4 +1,4 @@
-<script src="../SignupValidation.js"></script>
+
 <div class="container">
         <div
             class="modal fade"
@@ -40,7 +40,7 @@
                             </div>
                             <div class="form-group row">
                               <div class="col-sm-12">
-                                <input type="password" class="form-control text-center" name="inputPassword" id="inputPassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="enter password" 
+                                <input type="password" class="form-control text-center" name="inputPassword" id="inputPassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="enter password" onkeyup="testPassword()"
                                   required>
                                 <div class="valid-feedback">
                                   Looks good!
@@ -53,7 +53,7 @@
 
                             <div class="form-group row">
                                 <div class="col-sm-12">
-                                  <input type="password" class="form-control text-center" name="confirmPassword" id="confirmPassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="confirm password" 
+                                  <input type="password" class="form-control text-center" name="confirmPassword" id="confirmPassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="confirm password" onkeyup="testPassword()" 
                                     required>
                                     
                                   <div id="cPwdValid" class="valid-feedback">

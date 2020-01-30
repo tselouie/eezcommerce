@@ -36,11 +36,11 @@
         }
     });
 
-        //Clear modal on hide
         $('#signupModalCenter').on('hidden.bs.modal', function () {
           $(this).find('form').trigger('reset');
       })
 
+      
     let currForm1 = document.getElementById('createAccount');
       // Validate on submit:
       currForm1.addEventListener('submit', function(event) {
@@ -66,4 +66,22 @@
       });
     });
 
+    function testPassword(){
+
+          if ($('#inputPassword').val() != '' && $('#confirmPassword').val() != '' && $('#inputPassword').val() == $('#confirmPassword').val()) {
+            $("#submitBtn").attr("disabled",false);
+            $('#cPwdValid').show();
+            $('#cPwdInvalid').hide();
+            $('#confirmPassword').removeClass('is-invalid');
+            $('.pwds').removeClass('is-invalid')
+          } else {
+            $("#submitBtn").attr("disabled",true);
+            $('#cPwdValid').hide();
+            $('#cPwdInvalid').show();
+            $('#confirmPassword').addClass('is-invalid');
+            $('#cPwdInvalid').html('Passwords must match!').css('color', 'red');
+            $('.pwds').addClass('is-invalid')
+            }
+        
+    }
 
