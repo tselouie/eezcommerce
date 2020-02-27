@@ -8,17 +8,26 @@ var fs = require("fs");
 var bodyParser = require("body-parser");
 var exphbs = require("express-handlebars");
 var sass = require("sass");
-const multer = require('multer');
-var	upload = multer({ dest:'public/siteData/temp/img/'});
-const sizeOf = require('image-size');
+const multer = require("multer");
 
+const uploadStorage = multer.diskStorage({
+	destination: function(req) {
+		"public/siteData/" + req.auth.userDetails._id + "/img/";
+	},
+	filename: function(req, file, cb) {
+		cb(null, req.body.productName + path.extname(file.originalname));
+	}
+});
+
+var upload = multer({ storage: uploadStorage });
+const sizeOf = require("image-size");
+var hbHelpers = require("handlebars-helpers")();
 
 // custom modules
 const mailService = require("./modules/emailService.js");
 const userService = require("./modules/userService.js");
 const productService = require("./modules/productService.js");
 const orderService = require("./modules/orderService");
-const hbHelpers = require("./modules/hbHelpers.js");
 
 // express middlewares & setup
 
@@ -27,9 +36,7 @@ app.engine(
 	".hbs",
 	exphbs({
 		extname: ".hbs",
-		helpers: {
-			activeLink: hbHelpers.activeLink
-		}
+		helpers: hbHelpers
 	})
 );
 
@@ -148,6 +155,17 @@ app.get("/getProductDetail/:id", (req, res) => {
 		});
 });
 
+app.get("/dashboard/settings/resendVerification", (req, res) => {
+	mailService
+		.sendVerificationEmail(req.auth.userDetails.email, "signup")
+		.then(() => {
+			res.redirect("/email-verification-sent");
+		})
+		.catch(err => {
+			res.redirect("/404");
+		});
+});
+
 app.get("/dashboard/orders", (req, res) => {
 	var allorders = orderService
 		.getAllOrders(req.auth.userDetails._id)
@@ -164,13 +182,29 @@ app.get("/dashboard/orders", (req, res) => {
 		});
 });
 
+app.get("/getOrderDetail/:id", (req, res) => {
+	var id = req.params.id;
+	var oneOrder = orderService
+		.getOrderById(id)
+		.then(prod => {
+			res.json({ order: prod });
+		})
+		.catch(e => {
+			res.json({ error: "Unable to get product" });
+		});
+});
+
 app.get("/dashboard/settings", (req, res) => {
-	res.render("settings", { layout: "dashboard", pagename: "settings", userDetails: req.auth.userDetails });
+	res.render("settings", {
+		layout: "dashboard",
+		pagename: "settings",
+		userDetails: req.auth.userDetails,
+		securityQuestions: userService.SecurityQuestions
+	});
 });
 
 app.get("/dashboard/:route", (req, res) => {
 	const route = req.params.route;
-
 	res.render(
 		route,
 		{
@@ -248,9 +282,6 @@ app.post("/signup", (req, res) => {
 				});
 		})
 		.catch(error => {
-			userService.delete(req.body.email).catch(err => {
-				console.log(err);
-			});
 			switch (error.code) {
 				case 11000:
 					res.json({ error: "Email already exists. Please login or check your email address for accuracy." });
@@ -344,16 +375,26 @@ app.post("/addOrder", (req, res) => {
 		});
 });
 
+// keywords k.edit
 app.post("/edit-user", (req, res) => {
 	if (req.auth.isLoggedIn) {
 		let passed = req.body;
+
 		passed._id = req.auth.userDetails._id;
+		passed.isVerified = req.auth.userDetails.email === passed.email ? req.auth.userDetails.isVerified : false;
+
 		userService
 			.edit(passed)
 			.then(result => {
-				req.auth.userDetails.businessName = passed.businessName;
-				req.auth.userDetails.email = passed.email;
-				res.json({ redirectUrl: "/dashboard/settings" });
+				userService
+					.getUserDataForSession(req.auth.userDetails._id)
+					.then(user => {
+						req.auth.userDetails = user;
+						res.json({ redirectUrl: "/dashboard/settings" });
+					})
+					.catch(err => {
+						res.json({ error: err });
+					});
 			})
 			.catch(err => {
 				res.json({ error: err });
@@ -387,36 +428,47 @@ app.post("/customize", (req, res) => {
 	}
 });
 
-		
-app.post('/dashboard/upload', upload.single('file'),  (req, res) => {
-	
-	if (!req.file.mimetype.startsWith('image/')) {
-	  upload.dest()
-	  return res.status(422).json({
-		error :'The uploaded file must be an image'
-	  });
+app.post("/dashboard/upload", upload.single("file"), (req, res) => {
+	if (!req.file.mimetype.startsWith("image/")) {
+		upload.dest();
+		return res.status(422).json({
+			error: "The uploaded file must be an image"
+		});
 	}
-  
+
+	// let oldPath = req.file.path.split("\\").join("/");
+	// //rename path
+	// let newPath = "public/siteData/" + req.auth.userDetails._id + "/img/" + req.file.filename;
+
+	// //Move image file from temp/img to businessUser_id/img  and delete teh temp/img/file
+	// fs.readFile(oldPath, function(err, data) {
+	// 	fs.writeFile(newPath, data, function(err) {
+	// 		fs.unlink(oldPath, function(err) {
+	// 			if (err) throw err;
+	// 		});
+	// 	});
+	// });
+
 	const dimensions = sizeOf(req.file.path);
-  
-	if ((dimensions.width < 640) || (dimensions.height < 480)) {
-	  return res.status(422).json({
-		error :'The image must be at least 640 x 480px'
-	  });
+
+	if (dimensions.width < 640 || dimensions.height < 480) {
+		return res.status(422).json({
+			error: "The image must be at least 640 x 480px"
+		});
 	}
 	console.log(req.file);
 	return res.status(200).send(req.file);
-  });
+});
 
-  app.post('/dashboard/upload/delete',  (req, res) => {
-	const path = "./public/siteData/temp/img/" + req.file.filename
-try{
-	fs.unlinkSync(path);
-	resolve("successfully deleted image.");
-}catch(err){
-	console.error(err);
-}
-
+app.post("/dashboard/upload/delete", (req, res) => {
+	console.log("IN DELETE: " + req.file);
+	const path = "./public/siteData/" + req.auth.userDetails._id + "/img/" + req.file.filename;
+	try {
+		fs.unlinkSync(path);
+		resolve("successfully deleted image.");
+	} catch (err) {
+		console.error(err);
+	}
 });
 
 // Express MiddleWares
