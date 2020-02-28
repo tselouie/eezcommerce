@@ -71,6 +71,7 @@
 			$.get("/deleteProduct/" + rowId, (data) => {
 
 				$('.productRow').attr('data-target', '#cancelOrderModal');
+				location.reload();
 				console.log("request complete" + data.success);
 			});
 		} else {

@@ -429,6 +429,8 @@ app.post("/customize", (req, res) => {
 });
 
 app.post("/dashboard/upload", upload.single("file"), (req, res) => {
+
+
 	if (!req.file.mimetype.startsWith("image/")) {
 		upload.dest();
 		return res.status(422).json({
