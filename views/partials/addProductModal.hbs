@@ -110,9 +110,7 @@ const myDropzone = new Dropzone('#upload-widget', {
 						e.stopPropagation();
 						console.log("SUBMITTED FORM ADD PRODUCT");
 						myDropzone.processQueue();
-						var v = $('#dropzoneFile').prop('files');
-						
-						$.post("/dashboard/upload", v);
+						$.post("/dashboard/upload", myDropzone.files[0]);
 						
 			});
 
