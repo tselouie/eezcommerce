@@ -270,6 +270,22 @@ app.get("/sites/:id", (req, res) => {
 		});
 });
 
+app.get("/sites/:id/shop", (req, res) => {
+	let id = req.params.id;
+	userService
+		.getWebsiteDataById(id)
+		.then(site => {
+			productService.getAllProducts().then(prods => {
+				site.customMessage = "hello";
+				site.baseUrl = "/sites/" + site._id;
+				res.render("siteViews/shop", { layout: false, siteData: site, prods: prods });
+			});
+		})
+		.catch(err => {
+			res.redirect("/404");
+		});
+});
+
 // ROUTES k.post
 // 		->	POST 	Place all POST routes here
 
