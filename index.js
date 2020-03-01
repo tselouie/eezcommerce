@@ -259,7 +259,7 @@ app.get("/sites/:id", (req, res) => {
 	userService
 		.getWebsiteDataById(id)
 		.then(site => {
-			productService.getAllProducts().then(prods => {
+			productService.getAllProducts(id).then(prods => {
 				site.customMessage = "hello";
 				site.baseUrl = "/sites/" + site._id;
 				res.render("siteViews/home", { layout: false, siteData: site, prods: prods });
@@ -275,7 +275,7 @@ app.get("/sites/:id/shop", (req, res) => {
 	userService
 		.getWebsiteDataById(id)
 		.then(site => {
-			productService.getAllProducts().then(prods => {
+			productService.getAllProducts(id).then(prods => {
 				site.customMessage = "hello";
 				site.baseUrl = "/sites/" + site._id;
 				res.render("siteViews/shop", { layout: false, siteData: site, prods: prods });
@@ -441,6 +441,12 @@ app.post("/customize", (req, res) => {
 					"primary": #${req.body.primaryColor},
 					"secondary": #${req.body.secondaryColor}
 				);
+				
+				.hover:hover {
+					opacity: 0.5;
+					transition: 0.5s ease;
+					box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+				}
 
 				@import "node_modules/bootstrap/scss/bootstrap";
 			`
