@@ -412,6 +412,18 @@ app.get("/deleteProduct/:id", (req, res) => {
 		});
 });
 
+app.get("/deleteCategory/:id", (req, res) => {
+	let id = req.params.id;
+	categoryService
+		.deleteCategory(id)
+		.then(() => {
+			res.json({ error: false, redirectUrl: "/dashboard/categories" });
+		})
+		.catch(err => {
+			res.json({ error: err });
+		});
+});
+
 app.get("/logout", (req, res) => {
 	req.auth.isLoggedIn = false;
 	req.auth.userDetails = {};
