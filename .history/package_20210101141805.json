@@ -1,7 +1,6 @@
 {
 	"name": "eezcommerce",
 	"version": "1.0.0",
-	"homepage": "https://tselouie.github.io/eezcommerce/",
 	"description": "See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and rules",
 	"main": "index.js",
 	"scripts": {
