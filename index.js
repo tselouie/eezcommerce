@@ -1159,6 +1159,6 @@ if (process.env.ENABLE_SSL === "true") {
 }
 
 // start listening
-app.listen(process.env.SERVER_PORT || 8080, process.env.SERVER_HOSTNAME, () => {
+app.listen(process.env.SERVER_PORT || 8080, () => {
 	console.log("http server listening on port " + process.env.SERVER_PORT || 8080);
 });
